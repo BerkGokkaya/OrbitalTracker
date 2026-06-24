@@ -13,7 +13,7 @@
 
             <helix:SunLight />
 
-            <helix:SphereVisual3D Radius="6371" PhiDiv="60" ThetaDiv="60">
+            <helix:SphereVisual3D Radius="6371" PhiDiv="120" ThetaDiv="120">
                 <helix:SphereVisual3D.Material>
                     <DiffuseMaterial>
                         <DiffuseMaterial.Brush>
