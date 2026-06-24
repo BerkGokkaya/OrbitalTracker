@@ -6,28 +6,18 @@
     <Border BorderBrush="#33FFFFFF" BorderThickness="1" CornerRadius="8" Padding="15">
         <StackPanel>
             <TextBlock Text="UYDU DETAYLARI" Foreground="#FF3B82F6" FontSize="12" FontWeight="Bold" Margin="0,0,0,5"/>
-            <TextBlock Text="ISS (ZARYA)" Foreground="White" FontSize="20" FontWeight="Bold" Margin="0,0,0,15"/>
+            <TextBlock x:Name="SatNameText" Text="UYDU SEÇİLMEDİ" Foreground="White" FontSize="20" FontWeight="Bold" Margin="0,0,0,15" TextWrapping="Wrap"/>
 
             <Separator Background="#22FFFFFF" Margin="0,0,0,15"/>
 
             <Grid Margin="0,0,0,10">
-                <TextBlock Text="NORAD ID:" Foreground="#A0A0A0"/>
-                <TextBlock Text="25544" Foreground="White" HorizontalAlignment="Right" FontWeight="SemiBold"/>
-            </Grid>
-
-            <Grid Margin="0,0,0,10">
-                <TextBlock Text="Yörünge Türü:" Foreground="#A0A0A0"/>
-                <TextBlock Text="LEO (Alçak İrtifa)" Foreground="White" HorizontalAlignment="Right" FontWeight="SemiBold"/>
-            </Grid>
-
-            <Grid Margin="0,0,0,10">
                 <TextBlock Text="Yükseklik:" Foreground="#A0A0A0"/>
-                <TextBlock Text="421.5 km" Foreground="#FF10B981" HorizontalAlignment="Right" FontWeight="SemiBold"/>
+                <TextBlock x:Name="SatAltText" Text="-" Foreground="#FF10B981" HorizontalAlignment="Right" FontWeight="SemiBold"/>
             </Grid>
 
             <Grid Margin="0,0,0,10">
-                <TextBlock Text="Anlık Hız:" Foreground="#A0A0A0"/>
-                <TextBlock Text="27,560 km/s" Foreground="#FF10B981" HorizontalAlignment="Right" FontWeight="SemiBold"/>
+                <TextBlock Text="Dönüş Hızı:" Foreground="#A0A0A0"/>
+                <TextBlock x:Name="SatSpeedText" Text="-" Foreground="#FF10B981" HorizontalAlignment="Right" FontWeight="SemiBold"/>
             </Grid>
 
             <Separator Background="#22FFFFFF" Margin="0,0,0,15"/>
@@ -36,11 +26,11 @@
             <UniformGrid Columns="2" Margin="0,0,0,5">
                 <StackPanel>
                     <TextBlock Text="Enlem" Foreground="#707070" FontSize="10"/>
-                    <TextBlock Text="40.15° N" Foreground="White" FontWeight="Bold"/>
+                    <TextBlock x:Name="SatLatText" Text="-" Foreground="White" FontWeight="Bold"/>
                 </StackPanel>
                 <StackPanel>
                     <TextBlock Text="Boylam" Foreground="#707070" FontSize="10"/>
-                    <TextBlock Text="26.40° E" Foreground="White" FontWeight="Bold"/>
+                    <TextBlock x:Name="SatLonText" Text="-" Foreground="White" FontWeight="Bold"/>
                 </StackPanel>
             </UniformGrid>
         </StackPanel>

@@ -1,6 +1,7 @@
 ﻿using HelixToolkit.Wpf;
 using OrbitalTracker.Helpers;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Windows;
 using System.Windows.Input;
@@ -12,64 +13,81 @@ namespace OrbitalTracker.Views
 {
     public partial class MainWindow : Window
     {
-        private SatelliteMarker _mockSatellite;
-        private double _currentLongitude = 26.40;
+        // Artık tek bir uydu değil, bir liste yönetiyoruz
+        private List<SatelliteMarker> _satellites = new List<SatelliteMarker>();
         private DispatcherTimer _timer;
         private bool _isPanelOpen = false;
 
         public MainWindow()
         {
             InitializeComponent();
-            SetupMockSatellite();
+            SetupSatellites();
         }
 
-        private void SetupMockSatellite()
+        private void SetupSatellites()
         {
-            _mockSatellite = new SatelliteMarker(40.15, _currentLongitude, 420.0, Colors.Red);
+            // 1. ISS (Alçak Yörünge, Hızlı)
+            var iss = new SatelliteMarker("ISS (ZARYA)", 40.15, 26.40, 420.0, Colors.Red, 2.0);
 
-            MainViewport.Children.Add(_mockSatellite.Visual);
-            MainViewport.Children.Add(_mockSatellite.Trail.Visual);
+            // 2. Hubble Teleskobu (Farklı başlangıç noktası, orta hız)
+            var hubble = new SatelliteMarker("HUBBLE", 28.5, -80.5, 540.0, Colors.Blue, 1.5);
+
+            // 3. Türksat 4A (Çok yüksek, yavaş - GEO)
+            var turksat = new SatelliteMarker("TURKSAT 4A", 0.0, 42.0, 35786.0, Colors.Gold, 0.2);
+
+            _satellites.Add(iss);
+            _satellites.Add(hubble);
+            _satellites.Add(turksat);
+
+            // Tüm uyduları ve kuyruklarını sahneye ekle
+            foreach (var sat in _satellites)
+            {
+                MainViewport.Children.Add(sat.Visual);
+                MainViewport.Children.Add(sat.Trail.Visual);
+            }
 
             _timer = new DispatcherTimer();
-            _timer.Interval = TimeSpan.FromMilliseconds(50);
+            _timer.Interval = TimeSpan.FromMilliseconds(200);
             _timer.Tick += Timer_Tick;
             _timer.Start();
         }
 
         private void Timer_Tick(object sender, EventArgs e)
         {
-            _currentLongitude += 0.5;
-            _mockSatellite.UpdatePosition(40.15, _currentLongitude, 420.0);
+            // Tek bir döngüyle tüm filoyu hareket ettir
+            foreach (var sat in _satellites)
+            {
+                sat.MoveForward();
+            }
         }
 
-        // 3D Sahneye tıklandığında çalışacak metot
         private void MainViewport_MouseDown(object sender, MouseButtonEventArgs e)
         {
-            // Tıklanan piksel koordinatını al
             Point mousePos = e.GetPosition(MainViewport);
-
-            // Fare hizasındaki 3B nesneleri tara
             var hits = MainViewport.Viewport.FindHits(mousePos);
 
-            // Eğer bir nesneye tıklandıysa ve bu nesne bizim uydumuzun görseliyse
-            if (hits != null && hits.Any(h => h.Visual == _mockSatellite.Visual))
+            // 3D uzayda tıklanan objeyi al
+            var clickedVisual = hits?.FirstOrDefault()?.Visual;
+
+            // Filomuzun içinde bu görsele sahip olan uyduyu bul
+            var clickedSatellite = _satellites.FirstOrDefault(s => s.Visual == clickedVisual);
+
+            if (clickedSatellite != null)
             {
+                // YENİ: Panelin içeriğini tıklanan uydunun verileriyle güncelle!
+                SatelliteDetailPanel.UpdateDetails(
+                    clickedSatellite.Name,
+                    clickedSatellite.CurrentAlt,
+                    clickedSatellite.Speed,
+                    clickedSatellite.CurrentLat,
+                    clickedSatellite.CurrentLon
+                );
+
                 if (!_isPanelOpen)
                 {
-                    // Paneli açma animasyonunu başlat
                     Storyboard slideIn = (Storyboard)FindResource("SlideInAnimation");
                     slideIn.Begin(this);
                     _isPanelOpen = true;
-                }
-            }
-            else
-            {
-                // Uzay boşluğuna veya Dünya'ya tıklandıysa paneli geri kapat
-                if (_isPanelOpen)
-                {
-                    Storyboard slideOut = (Storyboard)FindResource("SlideOutAnimation");
-                    slideOut.Begin(this);
-                    _isPanelOpen = false;
                 }
             }
         }
