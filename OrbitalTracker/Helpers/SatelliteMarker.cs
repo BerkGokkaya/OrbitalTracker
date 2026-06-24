@@ -15,6 +15,7 @@ namespace OrbitalTracker.Helpers
         public double CurrentAlt { get; set; }
         public double Speed { get; set; }
 
+        private Color _originalColor;
         public SatelliteMarker(string name, double startLat, double startLon, double altitude, Color color, double speed = 0.5)
         {
             Name = name;
@@ -22,6 +23,7 @@ namespace OrbitalTracker.Helpers
             CurrentLon = startLon;
             CurrentAlt = altitude;
             Speed = speed;
+            _originalColor = color;
 
             Visual = new SphereVisual3D();
             Visual.Radius = 150;
@@ -52,6 +54,19 @@ namespace OrbitalTracker.Helpers
 
             Visual.Center = newPos;
             Trail.AddPoint(newPos);
+        }
+        public void Highlight()
+        {
+            // Seçilince rengi Neon Mavi (Cyan) yap ve küreyi biraz büyüt
+            Visual.Fill = new SolidColorBrush(Colors.Cyan);
+            Visual.Radius = 250; // 150'den 250'ye çıkardık
+        }
+
+        public void RemoveHighlight()
+        {
+            // Seçim bırakılınca orijinal rengine ve boyutuna geri dön
+            Visual.Fill = new SolidColorBrush(_originalColor);
+            Visual.Radius = 150;
         }
     }
 }

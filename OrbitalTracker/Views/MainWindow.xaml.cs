@@ -167,8 +167,16 @@ namespace OrbitalTracker.Views
 
             if (clickedSatellite != null)
             {
-                // YENİ: Kamerayı bu uyduya kilitle!
+                // YENİ: Eğer önceden seçili BAZI başka bir uydu varsa, onun parlaklığını kapat
+                if (_trackedSatellite != null && _trackedSatellite != clickedSatellite)
+                {
+                    _trackedSatellite.RemoveHighlight();
+                }
+
                 _trackedSatellite = clickedSatellite;
+
+                // YENİ: Şimdi tıkladığımız uyduyu parlat
+                _trackedSatellite.Highlight();
 
                 SatelliteDetailPanel.UpdateDetails(
                     clickedSatellite.Name,
@@ -187,11 +195,16 @@ namespace OrbitalTracker.Views
             }
             else
             {
-                // YENİ: Uzay boşluğuna tıklandı, kamera kilidini serbest bırak!
-                _trackedSatellite = null;
-
+                // Uzay boşluğuna tıklandıysa
                 if (_isPanelOpen)
                 {
+                    // YENİ: Kilitli uydunun parlaklığını kapat ve kilidi kır
+                    if (_trackedSatellite != null)
+                    {
+                        _trackedSatellite.RemoveHighlight();
+                        _trackedSatellite = null;
+                    }
+
                     Storyboard slideOut = (Storyboard)FindResource("SlideOutAnimation");
                     slideOut.Begin(this);
                     _isPanelOpen = false;
