@@ -30,12 +30,21 @@
 
     <Grid Background="#111116">
         <helix:HelixViewport3D x:Name="MainViewport" 
-                               ZoomExtentsWhenLoaded="True" 
-                               ShowCoordinateSystem="False"
-                               Background="Black"
-                               MouseDown="MainViewport_MouseDown">
+                       ZoomExtentsWhenLoaded="True" 
+                       ShowCoordinateSystem="False"
+                       Background="Black"
+                       MouseDown="MainViewport_MouseDown">
             <helix:SunLight />
             <helix:SphereVisual3D Radius="6371" PhiDiv="32" ThetaDiv="32">
+
+                <helix:SphereVisual3D.Transform>
+                    <RotateTransform3D>
+                        <RotateTransform3D.Rotation>
+                            <AxisAngleRotation3D Axis="1,0,0" Angle="-90" />
+                        </RotateTransform3D.Rotation>
+                    </RotateTransform3D>
+                </helix:SphereVisual3D.Transform>
+
                 <helix:SphereVisual3D.Material>
                     <DiffuseMaterial>
                         <DiffuseMaterial.Brush>

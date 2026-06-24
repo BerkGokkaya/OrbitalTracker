@@ -11,15 +11,20 @@ namespace OrbitalTracker.Helpers
 
         // DÜZELTME 1: Helix Toolkit'te Koniler için TruncatedConeVisual3D kullanılır
         public TruncatedConeVisual3D CoverageCone { get; private set; }
+        public double Speed { get; set; }
 
+
+        private double _inclination;
+        private double _phaseOffset; 
+        private Color _originalColor;
         public string Name { get; set; }
         public double CurrentLat { get; set; }
         public double CurrentLon { get; set; }
         public double CurrentAlt { get; set; }
-        public double Speed { get; set; }
+        
 
         // Orijinal rengi hafızada tutmak için
-        private Color _originalColor;
+        
 
         public SatelliteMarker(string name, double startLat, double startLon, double altitude, Color color, double speed = 0.5)
         {
@@ -29,12 +34,17 @@ namespace OrbitalTracker.Helpers
             CurrentAlt = altitude;
             Speed = speed;
             _originalColor = color; // Rengi kaydet
-
+            _inclination = startLat;
+           
             Visual = new SphereVisual3D();
             Visual.Radius = 150;
             Visual.Fill = new SolidColorBrush(color);
-
+            
+            Random rnd = new Random(name.GetHashCode());
+            _phaseOffset = rnd.NextDouble() * 360.0;
+           
             int baseTrailLimit = altitude > 10000 ? 500 : 120;
+            
             Trail = new OrbitTrailRenderer(color, baseTrailLimit);
 
             // --- DÜZELTME 1 DEVAMI: KONİYİ OLUŞTURMA ---
@@ -64,6 +74,9 @@ namespace OrbitalTracker.Helpers
         {
             CurrentLon += (Speed * speedMultiplier);
             if (CurrentLon > 180) CurrentLon -= 360;
+
+            // DÜZELTME: Artık herkes 0 noktasından geçmek zorunda değil, herkesin kendi açısı var!
+            CurrentLat = _inclination * Math.Sin((CurrentLon + _phaseOffset) * Math.PI / 180.0);
 
             UpdatePosition(CurrentLat, CurrentLon, CurrentAlt);
         }
