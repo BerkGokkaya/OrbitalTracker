@@ -9,13 +9,18 @@ namespace OrbitalTracker.Helpers
         public SphereVisual3D Visual { get; private set; }
         public OrbitTrailRenderer Trail { get; private set; }
 
+        // DÜZELTME 1: Helix Toolkit'te Koniler için TruncatedConeVisual3D kullanılır
+        public TruncatedConeVisual3D CoverageCone { get; private set; }
+
         public string Name { get; set; }
         public double CurrentLat { get; set; }
         public double CurrentLon { get; set; }
         public double CurrentAlt { get; set; }
         public double Speed { get; set; }
 
+        // Orijinal rengi hafızada tutmak için
         private Color _originalColor;
+
         public SatelliteMarker(string name, double startLat, double startLon, double altitude, Color color, double speed = 0.5)
         {
             Name = name;
@@ -23,25 +28,41 @@ namespace OrbitalTracker.Helpers
             CurrentLon = startLon;
             CurrentAlt = altitude;
             Speed = speed;
-            _originalColor = color;
+            _originalColor = color; // Rengi kaydet
 
             Visual = new SphereVisual3D();
             Visual.Radius = 150;
             Visual.Fill = new SolidColorBrush(color);
 
-            // --- AKILLI TABAN LİMİTİ ---
-            // Eğer uydu yüksek yöründeyse (Türksat gibi), çizgisi sönük kalmasın diye 
-            // ona 500 noktalık devasa bir hafıza veriyoruz. Normal uydulara 120 yetiyor.
             int baseTrailLimit = altitude > 10000 ? 500 : 120;
             Trail = new OrbitTrailRenderer(color, baseTrailLimit);
 
+            // --- DÜZELTME 1 DEVAMI: KONİYİ OLUŞTURMA ---
+            CoverageCone = new TruncatedConeVisual3D();
+            CoverageCone.TopRadius = 0; // Tepe noktasını sıfırla ki ucu sivri tam bir koni olsun!
+
+            var coneColor = Color.FromArgb(35, 0, 255, 255);
+            CoverageCone.Fill = new SolidColorBrush(coneColor);
+
             UpdatePosition(CurrentLat, CurrentLon, CurrentAlt);
+        }
+
+        // --- DÜZELTME 2: UNUTTUĞUMUZ VURGULAMA METOTLARI ---
+        public void Highlight()
+        {
+            Visual.Fill = new SolidColorBrush(Colors.Cyan);
+            Visual.Radius = 250;
+        }
+
+        public void RemoveHighlight()
+        {
+            Visual.Fill = new SolidColorBrush(_originalColor);
+            Visual.Radius = 150;
         }
 
         public void MoveForward(double speedMultiplier = 1.0)
         {
             CurrentLon += (Speed * speedMultiplier);
-
             if (CurrentLon > 180) CurrentLon -= 360;
 
             UpdatePosition(CurrentLat, CurrentLon, CurrentAlt);
@@ -50,23 +71,24 @@ namespace OrbitalTracker.Helpers
         public void UpdatePosition(double latitude, double longitude, double altitude)
         {
             var coords = CoordinateConverter.ToCartesian(latitude, longitude, altitude);
-            Point3D newPos = new Point3D(coords.X, coords.Y, coords.Z);
+            Point3D satPos = new Point3D(coords.X, coords.Y, coords.Z);
 
-            Visual.Center = newPos;
-            Trail.AddPoint(newPos);
-        }
-        public void Highlight()
-        {
-            // Seçilince rengi Neon Mavi (Cyan) yap ve küreyi biraz büyüt
-            Visual.Fill = new SolidColorBrush(Colors.Cyan);
-            Visual.Radius = 250; // 150'den 250'ye çıkardık
-        }
+            Visual.Center = satPos;
+            Trail.AddPoint(satPos);
 
-        public void RemoveHighlight()
-        {
-            // Seçim bırakılınca orijinal rengine ve boyutuna geri dön
-            Visual.Fill = new SolidColorBrush(_originalColor);
-            Visual.Radius = 150;
+            if (CoverageCone != null)
+            {
+                var surfaceCoords = CoordinateConverter.ToCartesian(latitude, longitude, 0);
+                Point3D basePos = new Point3D(surfaceCoords.X, surfaceCoords.Y, surfaceCoords.Z);
+
+                // Koninin taban merkez noktası Dünya yüzeyi
+                CoverageCone.Origin = basePos;
+
+                // Koninin baktığı yön (Dünya yüzeyinden uyduya doğru bir vektör)
+                CoverageCone.Normal = new Vector3D(satPos.X - basePos.X, satPos.Y - basePos.Y, satPos.Z - basePos.Z);
+                CoverageCone.Height = altitude;
+                CoverageCone.BaseRadius = altitude * 1.5;
+            }
         }
     }
 }

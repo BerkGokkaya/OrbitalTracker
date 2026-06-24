@@ -100,16 +100,28 @@ namespace OrbitalTracker.Views
 
         private void Timer_Tick(object sender, EventArgs e)
         {
+            // 1. Tüm uyduları kendi hızlarında hareket ettir
             foreach (var sat in _satellites)
             {
                 sat.MoveForward(_timeMultiplier / 4.0);
             }
 
-            // YENİ: KAMERA TAKİP (LOCK-ON) SİSTEMİ
+            // KAMERA TAKİP (LOCK-ON) VE UI GÜNCELLEME SİSTEMİ
             if (_trackedSatellite != null)
             {
-                // 0 animasyon süresiyle anında uydunun merkezine bak
+                // 2. Kamerayı zorla uydunun merkezine bakmaya odakla (Drone takibi)
                 MainViewport.LookAt(_trackedSatellite.Visual.Center, 0);
+
+                // --- YENİ: ANLIK UI TELEMETRİ GÜNCELLEMESİ ---
+                // Eğer bir uydu takip ediliyorsa, sol paneldeki verileri (Enlem, Boylam vb.) 
+                // saniyede 20 kez, tıkır tıkır güncelle!
+                SatelliteDetailPanel.UpdateDetails(
+                    _trackedSatellite.Name,
+                    _trackedSatellite.CurrentAlt,
+                    _trackedSatellite.Speed,
+                    _trackedSatellite.CurrentLat,
+                    _trackedSatellite.CurrentLon
+                );
             }
         }
 
@@ -167,16 +179,24 @@ namespace OrbitalTracker.Views
 
             if (clickedSatellite != null)
             {
-                // YENİ: Eğer önceden seçili BAZI başka bir uydu varsa, onun parlaklığını kapat
-                if (_trackedSatellite != null && _trackedSatellite != clickedSatellite)
+                // YENİ: Başka bir uydu seçiliyse önce onun konisini sahneden temizle
+                if (_trackedSatellite != null)
                 {
                     _trackedSatellite.RemoveHighlight();
+                    if (MainViewport.Children.Contains(_trackedSatellite.CoverageCone))
+                    {
+                        MainViewport.Children.Remove(_trackedSatellite.CoverageCone);
+                    }
                 }
 
                 _trackedSatellite = clickedSatellite;
-
-                // YENİ: Şimdi tıkladığımız uyduyu parlat
                 _trackedSatellite.Highlight();
+
+                // YENİ: Tıklanan uydunun kapsama konisini 3D sahneye ekle!
+                if (!MainViewport.Children.Contains(_trackedSatellite.CoverageCone))
+                {
+                    MainViewport.Children.Add(_trackedSatellite.CoverageCone);
+                }
 
                 SatelliteDetailPanel.UpdateDetails(
                     clickedSatellite.Name,
@@ -195,13 +215,19 @@ namespace OrbitalTracker.Views
             }
             else
             {
-                // Uzay boşluğuna tıklandıysa
+                // Uzay boşluğuna tıklandığında temizlik
                 if (_isPanelOpen)
                 {
-                    // YENİ: Kilitli uydunun parlaklığını kapat ve kilidi kır
                     if (_trackedSatellite != null)
                     {
                         _trackedSatellite.RemoveHighlight();
+
+                        // YENİ: Kamera kilidi kırılınca koniyi de sahneden kaldır
+                        if (MainViewport.Children.Contains(_trackedSatellite.CoverageCone))
+                        {
+                            MainViewport.Children.Remove(_trackedSatellite.CoverageCone);
+                        }
+
                         _trackedSatellite = null;
                     }
 
