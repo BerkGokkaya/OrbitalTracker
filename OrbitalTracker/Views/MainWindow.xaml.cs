@@ -9,6 +9,9 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Animation;
 using System.Windows.Threading;
+using OrbitalTracker.Services;
+using OrbitalTracker.Models;
+using System.Threading.Tasks;
 
 namespace OrbitalTracker.Views
 {
@@ -25,9 +28,10 @@ namespace OrbitalTracker.Views
         public MainWindow()
         {
             InitializeComponent();
-            SetupSatellites();
 
-            // YENİ: Filtre paneli olayını dinle
+            // Metot artık async olduğu için çağırırken ufak bir numara yapıyoruz
+            _ = SetupSatellitesAsync();
+
             FilterPanel.OnFilterApplied += FilterPanel_OnFilterApplied;
         }
         private void FilterPanel_OnFilterApplied(object sender, FilterEventArgs e)
@@ -74,28 +78,31 @@ namespace OrbitalTracker.Views
             }
         }
 
-        private void SetupSatellites()
+        private async Task SetupSatellitesAsync()
         {
-            // GERÇEKÇİ HIZ OPTİMİZASYONU: Taban hızları düşürdük ki 100x hızda 
-            // uydular perane gibi dönüp gözü yormasın, yağ gibi aksın.
-            var iss = new SatelliteMarker("ISS (ZARYA)", 40.15, 26.40, 420.0, Colors.Red, 0.4);
-            var hubble = new SatelliteMarker("HUBBLE", 28.5, -80.5, 540.0, Colors.Blue, 0.3);
-            var turksat = new SatelliteMarker("TURKSAT 4A", 0.0, 42.0, 35786.0, Colors.Gold, 0.08);
+            // 1. İşlem başlarken yükleme ekranını göster (XAML'da zaten Visible başlatmıştık ama emin olalım)
+            LoadingOverlay.Visibility = Visibility.Visible;
 
-            _satellites.Add(iss);
-            _satellites.Add(hubble);
-            _satellites.Add(turksat);
+            var satelliteService = new SatelliteService();
+            var fetchedData = await satelliteService.GetSatellitesAsync("MOCK_URL");
 
-            foreach (var sat in _satellites)
+            foreach (var dto in fetchedData)
             {
-                MainViewport.Children.Add(sat.Visual);
-                MainViewport.Children.Add(sat.Trail.Visual);
+                var color = dto.Type == "GEO" ? Colors.Gold : (dto.Name.Contains("ISS") ? Colors.Red : Colors.Blue);
+                var satMarker = new SatelliteMarker(dto.Name, dto.Latitude, dto.Longitude, dto.Altitude, color, dto.Velocity);
+
+                _satellites.Add(satMarker);
+                MainViewport.Children.Add(satMarker.Visual);
+                MainViewport.Children.Add(satMarker.Trail.Visual);
             }
 
             _timer = new DispatcherTimer();
-            _timer.Interval = TimeSpan.FromMilliseconds(50); // Saniyede 20 kare güncelleme
+            _timer.Interval = TimeSpan.FromMilliseconds(50);
             _timer.Tick += Timer_Tick;
             _timer.Start();
+
+            // 2. Her şey bittiğinde yükleme ekranını gizle ve uzayı göster!
+            LoadingOverlay.Visibility = Visibility.Collapsed;
         }
 
         private void Timer_Tick(object sender, EventArgs e)

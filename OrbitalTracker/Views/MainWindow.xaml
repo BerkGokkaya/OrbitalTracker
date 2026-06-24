@@ -78,5 +78,28 @@
                 </Grid>
             </Border>
         </DockPanel>
+        <Grid x:Name="LoadingOverlay" Background="#E605050A" Visibility="Visible">
+            <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+                <TextBlock Text="🛰" FontSize="60" HorizontalAlignment="Center" Margin="0,0,0,15">
+                    <TextBlock.RenderTransform>
+                        <RotateTransform x:Name="SpinnerTransform" CenterX="30" CenterY="30"/>
+                    </TextBlock.RenderTransform>
+                    <TextBlock.Triggers>
+                        <EventTrigger RoutedEvent="Loaded">
+                            <BeginStoryboard>
+                                <Storyboard>
+                                    <DoubleAnimation Storyboard.TargetName="SpinnerTransform" 
+                                             Storyboard.TargetProperty="Angle" 
+                                             From="0" To="360" Duration="0:0:2" RepeatBehavior="Forever"/>
+                                </Storyboard>
+                            </BeginStoryboard>
+                        </EventTrigger>
+                    </TextBlock.Triggers>
+                </TextBlock>
+
+                <TextBlock Text="UZAY AĞINA BAĞLANILIYOR..." Foreground="#FF3B82F6" FontSize="20" FontWeight="Bold" HorizontalAlignment="Center"/>
+                <TextBlock Text="Gerçek zamanlı TLE yörünge verileri indiriliyor" Foreground="#A0A0A0" FontSize="13" HorizontalAlignment="Center" Margin="0,8,0,0"/>
+            </StackPanel>
+        </Grid>
     </Grid>
 </Window>
