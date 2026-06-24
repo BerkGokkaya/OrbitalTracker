@@ -2,17 +2,16 @@
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:helix="http://helix-toolkit.org/wpf"
-        Title="Orbital Tracker" Height="720" Width="1080"
+        xmlns:views="clr-namespace:OrbitalTracker.Views"
+        Title="Orbital Tracker v1.0" Height="720" Width="1080"
         WindowStartupLocation="CenterScreen">
 
-    <Grid>
+    <Grid Background="#111116">
         <helix:HelixViewport3D x:Name="MainViewport" 
                                ZoomExtentsWhenLoaded="True" 
                                ShowCoordinateSystem="False"
                                Background="Black">
-
             <helix:SunLight />
-
             <helix:SphereVisual3D Radius="6371" PhiDiv="120" ThetaDiv="120">
                 <helix:SphereVisual3D.Material>
                     <DiffuseMaterial>
@@ -22,7 +21,45 @@
                     </DiffuseMaterial>
                 </helix:SphereVisual3D.Material>
             </helix:SphereVisual3D>
-
         </helix:HelixViewport3D>
+
+        
+        <DockPanel LastChildFill="False" Margin="20">
+
+            <views:SatelliteDetailView DockPanel.Dock="Left" VerticalAlignment="Top"/>
+            
+            <views:FilterPanelView DockPanel.Dock="Right" VerticalAlignment="Top"/>
+
+            <Border DockPanel.Dock="Bottom" 
+                    Background="#CC1E1E24" 
+                    BorderBrush="#33FFFFFF" 
+                    BorderThickness="1" 
+                    CornerRadius="8" 
+                    Padding="15" 
+                    HorizontalAlignment="Center" 
+                    Width="500">
+
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+
+                    <StackPanel Grid.Column="0" Orientation="Horizontal">
+                        <Button Content="⏸ Durdur" Width="70" Padding="5" Background="#22FFFFFF" Foreground="White" BorderBrush="#44FFFFFF" Margin="0,0,10,0"/>
+                        <Button Content="▶ Başlat" Width="70" Padding="5" Background="#FF10B981" Foreground="White" BorderThickness="0"/>
+                    </StackPanel>
+
+                    <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
+                        <TextBlock Text="Hız: " Foreground="#A0A0A0" VerticalAlignment="Center" Margin="0,0,5,0"/>
+                        <RadioButton Content="1x" Foreground="White" IsChecked="True" VerticalAlignment="Center" Margin="0,0,10,0"/>
+                        <RadioButton Content="10x" Foreground="White" VerticalAlignment="Center" Margin="0,0,10,0"/>
+                        <RadioButton Content="100x" Foreground="White" VerticalAlignment="Center"/>
+                    </StackPanel>
+                </Grid>
+            </Border>
+
+        </DockPanel>
     </Grid>
 </Window>

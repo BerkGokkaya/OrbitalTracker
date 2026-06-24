@@ -1,0 +1,32 @@
+﻿<UserControl x:Class="OrbitalTracker.Views.FilterPanelView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             Width="280" Background="#CC1E1E24">
+    <Border BorderBrush="#33FFFFFF" BorderThickness="1" CornerRadius="8" Padding="15">
+        <StackPanel>
+            <TextBlock Text="UYDU FİLTRELEME" Foreground="White" FontSize="16" FontWeight="Bold" Margin="0,0,0,15"/>
+
+            <TextBlock Text="Uydu Adı / ID:" Foreground="#A0A0A0" Margin="0,0,0,5"/>
+            <TextBox Background="#22FFFFFF" Foreground="White" BorderBrush="#44FFFFFF" Padding="5" Margin="0,0,0,15"/>
+
+            <TextBlock Text="Uydu Türü:" Foreground="#A0A0A0" Margin="0,0,0,5"/>
+            <CheckBox Content="Haberleşme (GEO)" Foreground="White" Margin="0,0,0,5" IsChecked="True"/>
+            <CheckBox Content="Navigasyon (GPS/GNSS)" Foreground="White" Margin="0,0,0,5" IsChecked="True"/>
+            <CheckBox Content="Bilimsel / Gözlem (LEO)" Foreground="White" Margin="0,0,0,15" IsChecked="True"/>
+
+            <Grid Margin="0,0,0,5">
+                <TextBlock Text="Maks. Yükseklik (km):" Foreground="#A0A0A0" HorizontalAlignment="Left"/>
+                <TextBlock Text="36000" Foreground="White" HorizontalAlignment="Right" FontWeight="Bold"/>
+            </Grid>
+            <Slider Minimum="400" Maximum="40000" Value="36000" TickFrequency="1000" IsSnapToTickEnabled="True" Margin="0,0,0,20"/>
+
+            <Button Content="Filtreleri Uygula" Background="#FF3B82F6" Foreground="White" FontWeight="Bold" Padding="8" BorderThickness="0" Cursor="Hand">
+                <Button.Resources>
+                    <Style TargetType="Border">
+                        <Setter Property="CornerRadius" Value="4"/>
+                    </Style>
+                </Button.Resources>
+            </Button>
+        </StackPanel>
+    </Border>
+</UserControl>

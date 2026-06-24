@@ -14,15 +14,12 @@ namespace OrbitalTracker.Views
 
         private void AddMockSatellite()
         {
-            // Örnek: Türkiye'nin tam üzerinde, 420 km yükseklikte bir uydu (Örn: Enlem 39, Boylam 35)
-            double mockLat = 39.0;
-            double mockLon = 35.0;
+            // Çanakkale koordinatları! (Bunu değiştirmeyi unutma)
+            double mockLat = 40.15;
+            double mockLon = 26.40;
             double mockAlt = 420.0;
 
-            // Kırmızı renkli bir uydu markörü oluştur
             SatelliteMarker mockSatellite = new SatelliteMarker(mockLat, mockLon, mockAlt, Colors.Red);
-
-            // Uyduyu HelixViewport3D'nin içine (Dünya'nın yanına) ekle
             MainViewport.Children.Add(mockSatellite.Visual);
         }
     }

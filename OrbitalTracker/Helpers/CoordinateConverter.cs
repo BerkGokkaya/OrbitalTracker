@@ -1,29 +1,69 @@
 ﻿using System;
-using System.Windows.Media.Media3D;
 
 namespace OrbitalTracker.Helpers
 {
     public static class CoordinateConverter
     {
-        private const double EarthRadius = 6371.0;
+        private const double EarthRadiusKm = 6371.0;
 
-        public static Point3D ToCartesian(double latitude, double longitude, double altitude)
+        public static (double X, double Y, double Z) ToCartesian(
+            double latitudeDeg,
+            double longitudeDeg,
+            double altitudeKm)
         {
-            double latRad = (Math.PI / 180) * latitude;
+            var lat = latitudeDeg * Math.PI / 180.0;
 
-            // Kaplamanın başlangıç noktasını telafi etmek için boylamı 90 derece kaydırıyoruz
-            // (Eğer bu sefer de Çin'e veya Amerika'ya düşerse burayı +90, -180 veya +180 yapıp tam noktayı bulabilirsin)
-            double longitudeOffset = longitude - 90.0;
-            double lonRad = (Math.PI / 180) * longitudeOffset;
+            // --- BOYLAM İNCE AYARI ---
+            // Noktayı sağa/sola kaydırmak için sadece bu değeri değiştir.
+            // Önce 0 yapıp nerede olduğuna bak. Eğer hala okyanustaysa;
+            // 90, -90, 180, -180 veya tam Çanakkale'ye oturana kadar ara bir değer (örn: 70, -110) gir.
+            double longitudeOffset = 180.0;
 
-            double totalRadius = EarthRadius + altitude;
+            var lon = (longitudeDeg + longitudeOffset) * Math.PI / 180.0;
 
-            // Z ekseninin eksi (-) olması WPF 3D'nin sol-sağ sarım yönüyle eşleşmesini sağlar
-            double x = totalRadius * Math.Cos(latRad) * Math.Cos(lonRad);
-            double y = totalRadius * Math.Sin(latRad);
-            double z = -totalRadius * Math.Cos(latRad) * Math.Sin(lonRad);
+            var radius = EarthRadiusKm + altitudeKm;
 
-            return new Point3D(x, y, z);
+            // En standart WPF 3D küresel koordinat formülü
+            var x = radius * Math.Cos(lat) * Math.Sin(lon);
+            var y = radius * Math.Sin(lat);
+            var z = radius * Math.Cos(lat) * Math.Cos(lon);
+
+            return (x, y, z);
+        }
+
+        public static (double Latitude, double Longitude, double Altitude) ToGeodetic(
+            double x, double y, double z)
+        {
+            var radius = Math.Sqrt(x * x + y * y + z * z);
+            var altitude = radius - EarthRadiusKm;
+
+            var latitude = Math.Asin(y / radius) * 180.0 / Math.PI;
+
+            // ToCartesian'daki offset değerinin aynısını buraya yazıyoruz
+            double longitudeOffset = -90.0;
+            var longitude = (Math.Atan2(x, z) * 180.0 / Math.PI) - longitudeOffset;
+
+            // Boylamı -180 ile 180 arasına çek (Normalize)
+            while (longitude <= -180) longitude += 360;
+            while (longitude > 180) longitude -= 360;
+
+            return (latitude, longitude, altitude);
+        }
+
+        public static (double X, double Y, double Z) ToNormalized(
+            double latitudeDeg,
+            double longitudeDeg,
+            double altitudeKm,
+            double scale = 1.0)
+        {
+            var (x, y, z) = ToCartesian(latitudeDeg, longitudeDeg, altitudeKm);
+            var radius = EarthRadiusKm + altitudeKm;
+
+            return (
+                x / radius * scale,
+                y / radius * scale,
+                z / radius * scale
+            );
         }
     }
 }
