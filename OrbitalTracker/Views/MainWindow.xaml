@@ -56,22 +56,24 @@
             </Grid>
             <views:FilterPanelView DockPanel.Dock="Right" VerticalAlignment="Top"/>
 
-            <Border DockPanel.Dock="Bottom" Background="#CC1E1E24" BorderBrush="#33FFFFFF" BorderThickness="1" CornerRadius="8" Padding="15" HorizontalAlignment="Center" Width="500">
+            <Border DockPanel.Dock="Bottom" Background="#CC1E1E24" BorderBrush="#33FFFFFF" BorderThickness="1" CornerRadius="8" Padding="20,10" HorizontalAlignment="Center" Margin="0,0,0,25">
                 <Grid>
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="Auto"/>
                         <ColumnDefinition Width="*"/>
                         <ColumnDefinition Width="Auto"/>
                     </Grid.ColumnDefinitions>
+
                     <StackPanel Grid.Column="0" Orientation="Horizontal">
-                        <Button Content="⏸ Durdur" Width="70" Padding="5" Background="#22FFFFFF" Foreground="White" BorderBrush="#44FFFFFF" Margin="0,0,10,0"/>
-                        <Button Content="▶ Başlat" Width="70" Padding="5" Background="#FF10B981" Foreground="White" BorderThickness="0"/>
+                        <Button x:Name="BtnPause" Content="⏸ Durdur" Click="BtnPause_Click" Width="80" Padding="5" Background="#22FFFFFF" Foreground="White" BorderBrush="#44FFFFFF" Margin="0,0,15,0"/>
+                        <Button x:Name="BtnPlay" Content="▶ Başlat" Click="BtnPlay_Click" Width="80" Padding="5" Background="#FF10B981" Foreground="White" BorderThickness="0"/>
                     </StackPanel>
-                    <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
-                        <TextBlock Text="Hız: " Foreground="#A0A0A0" VerticalAlignment="Center" Margin="0,0,5,0"/>
-                        <RadioButton Content="1x" Foreground="White" IsChecked="True" VerticalAlignment="Center" Margin="0,0,10,0"/>
-                        <RadioButton Content="10x" Foreground="White" VerticalAlignment="Center" Margin="0,0,10,0"/>
-                        <RadioButton Content="100x" Foreground="White" VerticalAlignment="Center"/>
+
+                    <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center" Margin="30,0,0,0">
+                        <TextBlock Text="Hız: " Foreground="#A0A0A0" VerticalAlignment="Center" Margin="0,0,10,0"/>
+                        <RadioButton x:Name="RbSpeed1" Content="1x" Tag="1" IsChecked="True" Checked="SpeedRadioButton_Checked" Foreground="White" VerticalAlignment="Center" Margin="0,0,15,0"/>
+                        <RadioButton x:Name="RbSpeed10" Content="10x" Tag="10" Checked="SpeedRadioButton_Checked" Foreground="White" VerticalAlignment="Center" Margin="0,0,15,0"/>
+                        <RadioButton x:Name="RbSpeed100" Content="100x" Tag="100" Checked="SpeedRadioButton_Checked" Foreground="White" VerticalAlignment="Center"/>
                     </StackPanel>
                 </Grid>
             </Border>

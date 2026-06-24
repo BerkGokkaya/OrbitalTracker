@@ -9,12 +9,11 @@ namespace OrbitalTracker.Helpers
         public SphereVisual3D Visual { get; private set; }
         public OrbitTrailRenderer Trail { get; private set; }
 
-        // Kimlik ve Anlık Konum Özellikleri
         public string Name { get; set; }
         public double CurrentLat { get; set; }
         public double CurrentLon { get; set; }
         public double CurrentAlt { get; set; }
-        public double Speed { get; set; } // Her uydunun kendi dönüş hızı
+        public double Speed { get; set; }
 
         public SatelliteMarker(string name, double startLat, double startLon, double altitude, Color color, double speed = 0.5)
         {
@@ -28,18 +27,19 @@ namespace OrbitalTracker.Helpers
             Visual.Radius = 150;
             Visual.Fill = new SolidColorBrush(color);
 
-            Trail = new OrbitTrailRenderer(color);
+            // --- AKILLI TABAN LİMİTİ ---
+            // Eğer uydu yüksek yöründeyse (Türksat gibi), çizgisi sönük kalmasın diye 
+            // ona 500 noktalık devasa bir hafıza veriyoruz. Normal uydulara 120 yetiyor.
+            int baseTrailLimit = altitude > 10000 ? 500 : 120;
+            Trail = new OrbitTrailRenderer(color, baseTrailLimit);
 
-            // Başlangıç konumuna oturt
             UpdatePosition(CurrentLat, CurrentLon, CurrentAlt);
         }
 
-        // Uydunun kendi kendini hareket ettirmesini sağlayan metot
-        public void MoveForward()
+        public void MoveForward(double speedMultiplier = 1.0)
         {
-            CurrentLon += Speed;
+            CurrentLon += (Speed * speedMultiplier);
 
-            // Dünya'nın etrafından tam tur atınca boylamı sıfırla/normalize et
             if (CurrentLon > 180) CurrentLon -= 360;
 
             UpdatePosition(CurrentLat, CurrentLon, CurrentAlt);
