@@ -17,8 +17,8 @@ namespace OrbitalTracker.Services
         {
             try
             {
-                // Örnek: ISS ve uzay istasyonları
-                var url = $"https://celestrak.org/SATCAT/tle.txt?GROUP={category}&FORMAT=tle";
+                var url = $"https://celestrak.org/NORAD/elements/gp.php?GROUP={category}&FORMAT=tle";
+
                 var response = await _httpClient.GetStringAsync(url);
                 return ParseTle(response);
             }
