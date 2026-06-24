@@ -14,11 +14,14 @@ namespace OrbitalTracker.Views
 {
     public partial class MainWindow : Window
     {
+        // Artık tek bir uydu değil, bir liste yönetiyoruz
         private List<SatelliteMarker> _satellites = new List<SatelliteMarker>();
         private DispatcherTimer _timer;
         private bool _isPanelOpen = false;
         private double _timeMultiplier = 1.0;
 
+        // YENİ: Kameranın o an kilitlendiği uyduyu tutacak değişken
+        private SatelliteMarker _trackedSatellite;
         public MainWindow()
         {
             InitializeComponent();
@@ -99,8 +102,14 @@ namespace OrbitalTracker.Views
         {
             foreach (var sat in _satellites)
             {
-                // Timer 50ms'de bir çalıştığı için adımı 4'e bölerek mikro akıcılık sağlıyoruz
                 sat.MoveForward(_timeMultiplier / 4.0);
+            }
+
+            // YENİ: KAMERA TAKİP (LOCK-ON) SİSTEMİ
+            if (_trackedSatellite != null)
+            {
+                // 0 animasyon süresiyle anında uydunun merkezine bak
+                MainViewport.LookAt(_trackedSatellite.Visual.Center, 0);
             }
         }
 
@@ -158,6 +167,9 @@ namespace OrbitalTracker.Views
 
             if (clickedSatellite != null)
             {
+                // YENİ: Kamerayı bu uyduya kilitle!
+                _trackedSatellite = clickedSatellite;
+
                 SatelliteDetailPanel.UpdateDetails(
                     clickedSatellite.Name,
                     clickedSatellite.CurrentAlt,
@@ -175,6 +187,9 @@ namespace OrbitalTracker.Views
             }
             else
             {
+                // YENİ: Uzay boşluğuna tıklandı, kamera kilidini serbest bırak!
+                _trackedSatellite = null;
+
                 if (_isPanelOpen)
                 {
                     Storyboard slideOut = (Storyboard)FindResource("SlideOutAnimation");
