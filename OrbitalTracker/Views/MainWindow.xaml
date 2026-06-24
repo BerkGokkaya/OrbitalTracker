@@ -6,13 +6,36 @@
         Title="Orbital Tracker v1.0" Height="720" Width="1080"
         WindowStartupLocation="CenterScreen">
 
+    <Window.Resources>
+        <Storyboard x:Key="SlideInAnimation">
+            <DoubleAnimation Storyboard.TargetName="DetailPanelTransform"
+                         Storyboard.TargetProperty="X"
+                         To="0" Duration="0:0:0.4">
+                <DoubleAnimation.EasingFunction>
+                    <CubicEase EasingMode="EaseOut"/>
+                </DoubleAnimation.EasingFunction>
+            </DoubleAnimation>
+        </Storyboard>
+
+        <Storyboard x:Key="SlideOutAnimation">
+            <DoubleAnimation Storyboard.TargetName="DetailPanelTransform"
+                         Storyboard.TargetProperty="X"
+                         To="-320" Duration="0:0:0.3">
+                <DoubleAnimation.EasingFunction>
+                    <CubicEase EasingMode="EaseIn"/>
+                </DoubleAnimation.EasingFunction>
+            </DoubleAnimation>
+        </Storyboard>
+    </Window.Resources>
+
     <Grid Background="#111116">
         <helix:HelixViewport3D x:Name="MainViewport" 
                                ZoomExtentsWhenLoaded="True" 
                                ShowCoordinateSystem="False"
-                               Background="Black">
+                               Background="Black"
+                               MouseDown="MainViewport_MouseDown">
             <helix:SunLight />
-            <helix:SphereVisual3D Radius="6371" PhiDiv="120" ThetaDiv="120">
+            <helix:SphereVisual3D Radius="6371" PhiDiv="32" ThetaDiv="32">
                 <helix:SphereVisual3D.Material>
                     <DiffuseMaterial>
                         <DiffuseMaterial.Brush>
@@ -23,34 +46,27 @@
             </helix:SphereVisual3D>
         </helix:HelixViewport3D>
 
-        
         <DockPanel LastChildFill="False" Margin="20">
 
-            <views:SatelliteDetailView DockPanel.Dock="Left" VerticalAlignment="Top"/>
-            
+            <Grid DockPanel.Dock="Left" VerticalAlignment="Top">
+                <Grid.RenderTransform>
+                    <TranslateTransform x:Name="DetailPanelTransform" X="-320"/>
+                </Grid.RenderTransform>
+                <views:SatelliteDetailView x:Name="SatelliteDetailPanel" />
+            </Grid>
             <views:FilterPanelView DockPanel.Dock="Right" VerticalAlignment="Top"/>
 
-            <Border DockPanel.Dock="Bottom" 
-                    Background="#CC1E1E24" 
-                    BorderBrush="#33FFFFFF" 
-                    BorderThickness="1" 
-                    CornerRadius="8" 
-                    Padding="15" 
-                    HorizontalAlignment="Center" 
-                    Width="500">
-
+            <Border DockPanel.Dock="Bottom" Background="#CC1E1E24" BorderBrush="#33FFFFFF" BorderThickness="1" CornerRadius="8" Padding="15" HorizontalAlignment="Center" Width="500">
                 <Grid>
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="Auto"/>
                         <ColumnDefinition Width="*"/>
                         <ColumnDefinition Width="Auto"/>
                     </Grid.ColumnDefinitions>
-
                     <StackPanel Grid.Column="0" Orientation="Horizontal">
                         <Button Content="⏸ Durdur" Width="70" Padding="5" Background="#22FFFFFF" Foreground="White" BorderBrush="#44FFFFFF" Margin="0,0,10,0"/>
                         <Button Content="▶ Başlat" Width="70" Padding="5" Background="#FF10B981" Foreground="White" BorderThickness="0"/>
                     </StackPanel>
-
                     <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
                         <TextBlock Text="Hız: " Foreground="#A0A0A0" VerticalAlignment="Center" Margin="0,0,5,0"/>
                         <RadioButton Content="1x" Foreground="White" IsChecked="True" VerticalAlignment="Center" Margin="0,0,10,0"/>
@@ -59,7 +75,6 @@
                     </StackPanel>
                 </Grid>
             </Border>
-
         </DockPanel>
     </Grid>
 </Window>
