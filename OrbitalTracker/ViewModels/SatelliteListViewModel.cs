@@ -4,12 +4,14 @@ using System.Linq;
 using System.Windows.Input;
 using OrbitalTracker.Helpers;
 using OrbitalTracker.Models;
+using OrbitalTracker.Services;
 
 namespace OrbitalTracker.ViewModels
 {
     public class SatelliteListViewModel : BaseViewModel
     {
         private readonly MainViewModel _mainViewModel;
+        private readonly FilterService _filterService = new FilterService();
 
         // --- Filtrelenmiş liste ---
         public ObservableCollection<OrbitalPosition> FilteredPositions { get; set; } = new();
@@ -79,25 +81,18 @@ namespace OrbitalTracker.ViewModels
             _mainViewModel.Positions.CollectionChanged += (s, e) => ApplyFilter();
         }
 
+
         private void ApplyFilter()
         {
             try
             {
-                var filtered = _mainViewModel.Positions.AsEnumerable();
-
-                // İsim araması
-                if (!string.IsNullOrWhiteSpace(SearchText))
-                    filtered = filtered.Where(p =>
-                        p.SatelliteName.Contains(SearchText, StringComparison.OrdinalIgnoreCase));
-
-                // Yükseklik filtresi
-                filtered = filtered.Where(p =>
-                    p.AltitudeKm >= MinAltitude && p.AltitudeKm <= MaxAltitude);
-
-                // Kategori filtresi
-                if (SelectedCategory != "Tümü")
-                    filtered = filtered.Where(p =>
-                        p.SatelliteName.Contains(SelectedCategory, StringComparison.OrdinalIgnoreCase));
+                var filtered = _filterService.Filter(
+                    _mainViewModel.Positions,
+                    SearchText,
+                    MinAltitude,
+                    MaxAltitude,
+                    SelectedCategory
+                );
 
                 FilteredPositions.Clear();
                 foreach (var pos in filtered)
