@@ -2,7 +2,7 @@
 
 namespace OrbitalTracker.Models
 {
-    // Harun'un API'sinden gelecek JSON yapısını temsil eden sınıf
+    // API'den gelecek JSON yapısını temsil eden sınıf
     public class SatelliteDto
     {
         [JsonPropertyName("id")]
