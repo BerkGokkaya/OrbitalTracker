@@ -23,6 +23,52 @@ namespace OrbitalTracker.Views
         {
             InitializeComponent();
             SetupSatellites();
+
+            // YENİ: Filtre paneli olayını dinle
+            FilterPanel.OnFilterApplied += FilterPanel_OnFilterApplied;
+        }
+        private void FilterPanel_OnFilterApplied(object sender, FilterEventArgs e)
+        {
+            foreach (var sat in _satellites)
+            {
+                bool isVisible = true;
+
+                // 1. İsim Taraması
+                if (!string.IsNullOrWhiteSpace(e.SearchText))
+                {
+                    if (!sat.Name.ToLower().Contains(e.SearchText))
+                        isVisible = false;
+                }
+
+                // 2. Yükseklik Sınırı Taraması
+                if (sat.CurrentAlt > e.MaxAltitude)
+                {
+                    isVisible = false;
+                }
+
+                // 3. Yörünge Tipi Taraması (LEO < 2000km, MEO < 35000km, GEO > 35000km kabaca)
+                if (sat.CurrentAlt <= 2000 && !e.ShowLEO) isVisible = false;
+                else if (sat.CurrentAlt > 2000 && sat.CurrentAlt <= 35000 && !e.ShowMEO) isVisible = false;
+                else if (sat.CurrentAlt > 35000 && !e.ShowGEO) isVisible = false;
+
+                // Kararı Uygula: Uyduyu ve Kuyruğunu 3D dünyada göster veya gizle
+                if (isVisible)
+                {
+                    if (!MainViewport.Children.Contains(sat.Visual))
+                    {
+                        MainViewport.Children.Add(sat.Visual);
+                        MainViewport.Children.Add(sat.Trail.Visual);
+                    }
+                }
+                else
+                {
+                    if (MainViewport.Children.Contains(sat.Visual))
+                    {
+                        MainViewport.Children.Remove(sat.Visual);
+                        MainViewport.Children.Remove(sat.Trail.Visual);
+                    }
+                }
+            }
         }
 
         private void SetupSatellites()
