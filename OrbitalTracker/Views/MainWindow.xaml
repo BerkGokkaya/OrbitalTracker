@@ -1,0 +1,28 @@
+﻿<Window x:Class="OrbitalTracker.Views.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:helix="http://helix-toolkit.org/wpf"
+        Title="Orbital Tracker" Height="720" Width="1080"
+        WindowStartupLocation="CenterScreen">
+
+    <Grid>
+        <helix:HelixViewport3D x:Name="MainViewport" 
+                               ZoomExtentsWhenLoaded="True" 
+                               ShowCoordinateSystem="False"
+                               Background="Black">
+
+            <helix:SunLight />
+
+            <helix:SphereVisual3D Radius="6371" PhiDiv="60" ThetaDiv="60">
+                <helix:SphereVisual3D.Material>
+                    <DiffuseMaterial>
+                        <DiffuseMaterial.Brush>
+                            <ImageBrush ImageSource="/Resources/earth_texture.jpg" />
+                        </DiffuseMaterial.Brush>
+                    </DiffuseMaterial>
+                </helix:SphereVisual3D.Material>
+            </helix:SphereVisual3D>
+
+        </helix:HelixViewport3D>
+    </Grid>
+</Window>
