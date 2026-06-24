@@ -14,6 +14,7 @@
 
   <ItemGroup>
     <PackageReference Include="HelixToolkit.Wpf" Version="3.1.2" />
+    <PackageReference Include="SGP.NET" Version="1.5.0" />
   </ItemGroup>
 
   <ItemGroup>

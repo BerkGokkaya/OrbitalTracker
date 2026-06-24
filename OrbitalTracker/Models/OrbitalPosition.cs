@@ -4,10 +4,11 @@
     {
         public int SatelliteId { get; set; }
         public string SatelliteName { get; set; }
-        public double Latitude { get; set; }    // Enlem (-90 ile 90 arası)
-        public double Longitude { get; set; }   // Boylam (-180 ile 180 arası)
-        public double AltitudeKm { get; set; }  // Yükseklik (km)
-        public double SpeedKmS { get; set; }    // Hız (km/s)
-        public DateTime Timestamp { get; set; } // Hesaplama zamanı
+        public double Latitude { get; set; }
+        public double Longitude { get; set; }
+        public double AltitudeKm { get; set; }
+        public double SpeedKmS { get; set; }
+        public string Type { get; set; }        // LEO, MEO, GEO
+        public DateTime Timestamp { get; set; }
     }
 }

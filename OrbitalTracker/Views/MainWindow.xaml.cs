@@ -77,32 +77,54 @@ namespace OrbitalTracker.Views
                 }
             }
         }
-
         private async Task SetupSatellitesAsync()
         {
-            // 1. İşlem başlarken yükleme ekranını göster (XAML'da zaten Visible başlatmıştık ama emin olalım)
             LoadingOverlay.Visibility = Visibility.Visible;
 
-            var satelliteService = new SatelliteService();
-            var fetchedData = await satelliteService.GetSatellitesAsync("MOCK_URL");
+            var orbitService = new OrbitService();
+            await orbitService.LoadDataAsync("stations");
 
-            foreach (var dto in fetchedData)
+            var positions = new List<OrbitalPosition>();
+
+            orbitService.PositionsUpdated += async updatedPositions =>
             {
-                var color = dto.Type == "GEO" ? Colors.Gold : (dto.Name.Contains("ISS") ? Colors.Red : Colors.Blue);
-                var satMarker = new SatelliteMarker(dto.Name, dto.Latitude, dto.Longitude, dto.Altitude, color, dto.Velocity);
+                await Dispatcher.InvokeAsync(() =>
+                {
+                    foreach (var pos in updatedPositions)
+                    {
+                        // Daha önce eklenmişse atlıyoruz
+                        if (_satellites.Any(s => s.Name == pos.SatelliteName)) continue;
 
-                _satellites.Add(satMarker);
-                MainViewport.Children.Add(satMarker.Visual);
-                MainViewport.Children.Add(satMarker.Trail.Visual);
-            }
+                        var color = pos.AltitudeKm > 35000 ? Colors.Gold :
+                                    pos.SatelliteName.Contains("ISS") ? Colors.Red : Colors.Blue;
 
-            _timer = new DispatcherTimer();
-            _timer.Interval = TimeSpan.FromMilliseconds(50);
-            _timer.Tick += Timer_Tick;
-            _timer.Start();
+                        var satMarker = new SatelliteMarker(
+                            pos.SatelliteName,
+                            pos.Latitude,
+                            pos.Longitude,
+                            pos.AltitudeKm,
+                            color,
+                            pos.SpeedKmS
+                        );
 
-            // 2. Her şey bittiğinde yükleme ekranını gizle ve uzayı göster!
-            LoadingOverlay.Visibility = Visibility.Collapsed;
+                        _satellites.Add(satMarker);
+                        MainViewport.Children.Add(satMarker.Visual);
+                        MainViewport.Children.Add(satMarker.Trail.Visual);
+                    }
+
+                    if (_timer == null)
+                    {
+                        _timer = new DispatcherTimer();
+                        _timer.Interval = TimeSpan.FromMilliseconds(50);
+                        _timer.Tick += Timer_Tick;
+                        _timer.Start();
+                    }
+
+                    LoadingOverlay.Visibility = Visibility.Collapsed;
+                });
+            };
+
+            orbitService.StartTracking();
         }
 
         private void Timer_Tick(object sender, EventArgs e)
