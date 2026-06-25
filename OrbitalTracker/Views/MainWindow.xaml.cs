@@ -1,4 +1,4 @@
-﻿using HelixToolkit.Wpf;
+using HelixToolkit.Wpf;
 using OrbitalTracker.Helpers;
 using System;
 using System.Collections.Generic;
@@ -17,24 +17,31 @@ namespace OrbitalTracker.Views
 {
     public partial class MainWindow : Window
     {
-        // Artık tek bir uydu değil, bir liste yönetiyoruz
-        private List<SatelliteMarker> _satellites = new List<SatelliteMarker>();
-        private DispatcherTimer _timer;
+        public OrbitalTracker.ViewModels.MainViewModel ViewModel { get; }
+        private readonly Sgp4Calculator _calculator = new Sgp4Calculator();
+        private DateTime _simulationTime = DateTime.UtcNow;
+
+        private readonly List<SatelliteMarker> _satellites = new List<SatelliteMarker>();
+        private DispatcherTimer? _timer;
         private bool _isPanelOpen = false;
         private double _timeMultiplier = 1.0;
 
         // YENİ: Kameranın o an kilitlendiği uyduyu tutacak değişken
-        private SatelliteMarker _trackedSatellite;
+        private SatelliteMarker? _trackedSatellite;
+
         public MainWindow()
         {
             InitializeComponent();
 
-            // Metot artık async olduğu için çağırırken ufak bir numara yapıyoruz
-            _ = SetupSatellitesAsync();
+            ViewModel = new OrbitalTracker.ViewModels.MainViewModel();
+            DataContext = ViewModel;
+
+            SetupSatellitesAsync();
 
             FilterPanel.OnFilterApplied += FilterPanel_OnFilterApplied;
         }
-        private void FilterPanel_OnFilterApplied(object sender, FilterEventArgs e)
+
+        private void FilterPanel_OnFilterApplied(object? sender, FilterEventArgs e)
         {
             foreach (var sat in _satellites)
             {
@@ -61,30 +68,37 @@ namespace OrbitalTracker.Views
                 // Kararı Uygula: Uyduyu ve Kuyruğunu 3D dünyada göster veya gizle
                 if (isVisible)
                 {
-                    if (!MainViewport.Children.Contains(sat.Visual))
+                    if (!sat.IsVisible)
                     {
                         MainViewport.Children.Add(sat.Visual);
                         MainViewport.Children.Add(sat.Trail.Visual);
+                        sat.IsVisible = true;
                     }
                 }
                 else
                 {
-                    if (MainViewport.Children.Contains(sat.Visual))
+                    if (sat.IsVisible)
                     {
                         MainViewport.Children.Remove(sat.Visual);
                         MainViewport.Children.Remove(sat.Trail.Visual);
+                        if (MainViewport.Children.Contains(sat.CoverageCone))
+                        {
+                            MainViewport.Children.Remove(sat.CoverageCone);
+                        }
+                        sat.IsVisible = false;
                     }
                 }
             }
         }
-        private async Task SetupSatellitesAsync()
+
+        private void SetupSatellitesAsync()
         {
             LoadingOverlay.Visibility = Visibility.Visible;
 
-            var orbitService = new OrbitService();
-            await orbitService.LoadDataAsync("stations");
+            var orbitService = ViewModel.OrbitService;
 
-            var positions = new List<OrbitalPosition>();
+            // Start loading via ViewModel command
+            ViewModel.LoadDataCommand.Execute(null);
 
             orbitService.PositionsUpdated += async updatedPositions =>
             {
@@ -95,11 +109,15 @@ namespace OrbitalTracker.Views
                         // Daha önce eklenmişse atlıyoruz
                         if (_satellites.Any(s => s.Name == pos.SatelliteName)) continue;
 
+                        var satInfo = orbitService.Satellites.FirstOrDefault(s => s.Name == pos.SatelliteName);
+                        if (satInfo.Propagator == null) continue;
+
                         var color = pos.AltitudeKm > 35000 ? Colors.Gold :
                                     pos.SatelliteName.Contains("ISS") ? Colors.Red : Colors.Blue;
 
                         var satMarker = new SatelliteMarker(
                             pos.SatelliteName,
+                            satInfo.Propagator,
                             pos.Latitude,
                             pos.Longitude,
                             pos.AltitudeKm,
@@ -118,21 +136,25 @@ namespace OrbitalTracker.Views
                         _timer.Interval = TimeSpan.FromMilliseconds(50);
                         _timer.Tick += Timer_Tick;
                         _timer.Start();
+                        _simulationTime = DateTime.UtcNow;
                     }
 
                     LoadingOverlay.Visibility = Visibility.Collapsed;
                 });
             };
 
-            orbitService.StartTracking();
+            ViewModel.StartTrackingCommand.Execute(null);
         }
 
-        private void Timer_Tick(object sender, EventArgs e)
+        private void Timer_Tick(object? sender, EventArgs e)
         {
-            // 1. Tüm uyduları kendi hızlarında hareket ettir
+            // 1. Tüm uyduları kendi hızlarında hareket ettir (Physics-based SGP4)
+            double deltaTime = 0.05; // 50ms interval
+            _simulationTime = _simulationTime.AddSeconds(deltaTime * _timeMultiplier);
+
             foreach (var sat in _satellites)
             {
-                sat.MoveForward(_timeMultiplier / 4.0);
+                sat.UpdatePositionByTime(_simulationTime, _calculator);
             }
 
             // KAMERA TAKİP (LOCK-ON) VE UI GÜNCELLEME SİSTEMİ
@@ -159,6 +181,7 @@ namespace OrbitalTracker.Views
             if (_timer != null && _timer.IsEnabled)
             {
                 _timer.Stop();
+                ViewModel.StopTrackingCommand.Execute(null);
                 BtnPause.Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#FFEF4444"));
                 BtnPlay.Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#22FFFFFF"));
             }
@@ -169,6 +192,7 @@ namespace OrbitalTracker.Views
             if (_timer != null && !_timer.IsEnabled)
             {
                 _timer.Start();
+                ViewModel.StartTrackingCommand.Execute(null);
                 BtnPlay.Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#FF10B981"));
                 BtnPause.Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#22FFFFFF"));
             }
@@ -181,6 +205,11 @@ namespace OrbitalTracker.Views
                 if (double.TryParse(rb.Tag.ToString(), out double newSpeed))
                 {
                     _timeMultiplier = newSpeed;
+
+                    if (ViewModel != null)
+                    {
+                        ViewModel.SimulationSpeed = newSpeed;
+                    }
 
                     if (_satellites != null)
                     {

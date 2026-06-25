@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Windows.Input;
@@ -17,7 +17,7 @@ namespace OrbitalTracker.ViewModels
         public ObservableCollection<OrbitalPosition> FilteredPositions { get; set; } = new();
 
         // --- Arama ---
-        private string _searchText;
+        private string _searchText = string.Empty;
         public string SearchText
         {
             get => _searchText;

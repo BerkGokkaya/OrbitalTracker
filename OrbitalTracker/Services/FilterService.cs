@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using OrbitalTracker.Models;
@@ -9,7 +9,7 @@ namespace OrbitalTracker.Services
     {
         public List<OrbitalPosition> Filter(
             IEnumerable<OrbitalPosition> positions,
-            string searchText = null,
+            string? searchText = null,
             double minAltitude = 0,
             double maxAltitude = 50000,
             string category = "Tümü")

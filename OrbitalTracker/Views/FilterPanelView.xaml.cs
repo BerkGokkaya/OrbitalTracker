@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Windows;
 using System.Windows.Controls;
 
@@ -7,7 +7,7 @@ namespace OrbitalTracker.Views
     // Filtre kriterlerini taşıyacak küçük bir veri paketi
     public class FilterEventArgs : EventArgs
     {
-        public string SearchText { get; set; }
+        public string SearchText { get; set; } = string.Empty;
         public bool ShowGEO { get; set; }
         public bool ShowMEO { get; set; }
         public bool ShowLEO { get; set; }
@@ -17,7 +17,7 @@ namespace OrbitalTracker.Views
     public partial class FilterPanelView : UserControl
     {
         // MainWindow'un dinleyeceği olay
-        public event EventHandler<FilterEventArgs> OnFilterApplied;
+        public event EventHandler<FilterEventArgs>? OnFilterApplied;
 
         public FilterPanelView()
         {

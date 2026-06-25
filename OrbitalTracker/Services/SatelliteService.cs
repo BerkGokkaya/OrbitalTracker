@@ -1,4 +1,4 @@
-﻿using OrbitalTracker.Models;
+using OrbitalTracker.Models;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
@@ -9,17 +9,20 @@ namespace OrbitalTracker.Services
         private readonly OrbitService _orbitService = new OrbitService();
         private List<OrbitalPosition> _lastPositions = new List<OrbitalPosition>();
 
-        public event Action<List<OrbitalPosition>> PositionsUpdated;
+        public event Action<List<OrbitalPosition>>? PositionsUpdated;
 
-        public async Task LoadAsync(string category = "stations")
+        public SatelliteService()
         {
-            await _orbitService.LoadDataAsync(category);
-
             _orbitService.PositionsUpdated += positions =>
             {
                 _lastPositions = positions;
                 PositionsUpdated?.Invoke(positions);
             };
+        }
+
+        public async Task LoadAsync(string category = "stations")
+        {
+            await _orbitService.LoadDataAsync(category);
         }
 
         public void StartTracking() => _orbitService.StartTracking();

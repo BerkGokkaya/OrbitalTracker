@@ -1,6 +1,11 @@
-﻿using HelixToolkit.Wpf;
+using HelixToolkit.Wpf;
 using System.Windows.Media;
 using System.Windows.Media.Media3D;
+using SGPdotNET.CoordinateSystem;
+using SGPdotNET.TLE;
+using SGPdotNET.Propagation;
+using SGPdotNET.Observation;
+using System;
 
 namespace OrbitalTracker.Helpers
 {
@@ -15,36 +20,41 @@ namespace OrbitalTracker.Helpers
 
 
         private double _inclination;
-        private double _phaseOffset; 
+        private double _phaseOffset;
         private Color _originalColor;
         public string Name { get; set; }
         public double CurrentLat { get; set; }
         public double CurrentLon { get; set; }
         public double CurrentAlt { get; set; }
-        
+        public double Speed { get; set; }
+        public bool IsVisible { get; set; } = true;
+
+        // Reference to the actual SGP4 propagator
+        public Satellite Propagator { get; private set; }
 
         // Orijinal rengi hafızada tutmak için
-        
 
-        public SatelliteMarker(string name, double startLat, double startLon, double altitude, Color color, double speed = 0.5)
+
+        public SatelliteMarker(string name, Satellite propagator, double startLat, double startLon, double altitude, Color color, double speed = 0.5)
         {
             Name = name;
+            Propagator = propagator;
             CurrentLat = startLat;
             CurrentLon = startLon;
             CurrentAlt = altitude;
             Speed = speed;
             _originalColor = color; // Rengi kaydet
             _inclination = startLat;
-           
+
             Visual = new SphereVisual3D();
             Visual.Radius = 150;
             Visual.Fill = new SolidColorBrush(color);
-            
+
             Random rnd = new Random(name.GetHashCode());
             _phaseOffset = rnd.NextDouble() * 360.0;
-           
+
             int baseTrailLimit = altitude > 10000 ? 500 : 120;
-            
+
             Trail = new OrbitTrailRenderer(color, baseTrailLimit);
 
             // --- DÜZELTME 1 DEVAMI: KONİYİ OLUŞTURMA ---
@@ -70,15 +80,18 @@ namespace OrbitalTracker.Helpers
             Visual.Radius = 150;
         }
 
-        public void MoveForward(double speedMultiplier = 1.0)
+        public void UpdatePositionByTime(DateTime time, OrbitalTracker.Services.Sgp4Calculator calculator)
         {
-            CurrentLon += (Speed * speedMultiplier);
-            if (CurrentLon > 180) CurrentLon -= 360;
+            var pos = calculator.Calculate(Propagator, Name, time);
+            if (pos != null)
+            {
+                CurrentLat = pos.Latitude;
+                CurrentLon = pos.Longitude;
+                CurrentAlt = pos.AltitudeKm;
+                Speed = pos.SpeedKmS;
 
-            // DÜZELTME: Artık herkes 0 noktasından geçmek zorunda değil, herkesin kendi açısı var!
-            CurrentLat = _inclination * Math.Sin((CurrentLon + _phaseOffset) * Math.PI / 180.0);
-
-            UpdatePosition(CurrentLat, CurrentLon, CurrentAlt);
+                UpdatePosition(CurrentLat, CurrentLon, CurrentAlt);
+            }
         }
 
         public void UpdatePosition(double latitude, double longitude, double altitude)

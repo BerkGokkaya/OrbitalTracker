@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.ObjectModel;
 using System.Threading.Tasks;
 using System.Windows;
@@ -12,13 +12,14 @@ namespace OrbitalTracker.ViewModels
     public class MainViewModel : BaseViewModel
     {
         private readonly OrbitService _orbitService = new OrbitService();
+        public OrbitService OrbitService => _orbitService;
 
         // --- Uydu listesi ---
         public ObservableCollection<OrbitalPosition> Positions { get; set; } = new();
 
         // --- Seçili uydu ---
-        private OrbitalPosition _selectedSatellite;
-        public OrbitalPosition SelectedSatellite
+        private OrbitalPosition? _selectedSatellite;
+        public OrbitalPosition? SelectedSatellite
         {
             get => _selectedSatellite;
             set => SetProperty(ref _selectedSatellite, value);

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Net.Http;
 using System.Threading.Tasks;
@@ -22,10 +22,8 @@ namespace OrbitalTracker.Services
                 var response = await _httpClient.GetStringAsync(url);
                 return ParseTle(response);
             }
-            catch (Exception ex)
+            catch
             {
-                System.Windows.MessageBox.Show($"API hatası: {ex.Message}",
-                    "Hata", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
                 return new List<TleData>();
             }
         }
@@ -61,10 +59,9 @@ namespace OrbitalTracker.Services
                     });
                 }
             }
-            catch (Exception ex)
+            catch
             {
-                System.Windows.MessageBox.Show($"TLE ayrıştırma hatası: {ex.Message}",
-                    "Hata", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
+                // Silently handle parsing exceptions
             }
 
             return result;
